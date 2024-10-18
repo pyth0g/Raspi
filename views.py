@@ -339,11 +339,13 @@ class qrdCreate:
                 return render_template('qrd-create.html', img_data=f"data:image/png;base64,{self.b64im}", link=url, t1="Link:", t2="QR Code:", vis="submit")
             
             elif "save_qr" in req:
-                path = f"qr_code_{self.page}.png"
+                img = Image.open(io.BytesIO(base64.b64decode(self.b64im)))
+                img_io = io.BytesIO()
 
-                Image.open(io.BytesIO(base64.b64decode(self.b64im))).save(path)
+                img.save(img_io, 'PNG')
+                img_io.seek(0)
 
-                return send_file(path, as_attachment=True)
+                return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f"qr_code_{self.page}.png")
 
         return render_template('qrd-create.html', img_data="", vis="hidden")
 
