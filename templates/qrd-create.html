@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create QRD</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            margin: 10px;
+        }
+
+        .submit_form {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            width: 44vh;
+        }
+
+        .set {
+            width: 10%;
+            box-sizing: border-box;
+            padding: 0px;
+            font-size: 0.8rem;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .static-label {
+            position: absolute;
+            left: 8px;
+            z-index: 1;
+            pointer-events: none;
+            color: white;
+        }
+
+        .new {
+            background-color: black;
+            color: white;
+            border: none;
+            padding-left: 21.65ch;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .qrcode {
+            margin-left: 0;
+        }
+
+        @media (max-width: 1000px) {
+            form {
+                width: 37vh;
+            }
+        }
+
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .stacked {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        .stacked p, .stacked a {
+            margin: 0;
+            padding: 5px 0;
+            font-size: 1rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        a:visited{
+            color: rgb(0, 102, 204);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="center" style="font-size: 2rem;">CREATE QRD</h1>
+
+    <div class="center" style="margin-top: 100px;">
+        <form id="qrd" class="submit_form" method="POST" action="/qrd">
+            <div class="container">
+                <div class="container">
+                    <span class="static-label">raspi.kladnik.cc/qrd/</span>
+                    <input id="new" name="new" class="new" required autofocus maxlength="16" type="text" autocomplete="off">
+                </div>
+
+                <input type="submit" class="set" value="Done">
+            </div>
+        </form>
+    </div>
+
+    <div class="center">
+        <p style="color: rgb(255, 45, 45);">{{ error }}</p>
+    </div>
+    
+    <div class="stacked" style="margin-top: 30px; margin-left: 39.84%;">
+        <p>{{ t1 }}</p>
+        <a href="{{ link }}">{{ link }}</a>
+        <p>{{ t2 }}</p>
+        <img class="qrcode" src="{{ img_data }}" onerror="handleError()" />
+        <form id="save_qr" class="submit_form" method="POST" action="/qrd">
+            <input type="hidden" name="save_qr" value="{{ img_data }}">
+            <input type="{{ vis }}" class="set" style="width: 41%; margin-top: 5px;" value="Save">
+        </form>
+    </div>
+</body>
+</html>

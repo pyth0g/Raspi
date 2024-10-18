@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login QRD - {{ page }}</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+            width: 30vh;
+        }
+
+        label, input, input[type="submit"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+        }
+
+        @media (max-width: 1000px) {
+            form {
+                width: 37vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form id="login">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <input type="submit" value="Login">
+        <input type="button" id="cancel" value="Cancel" onclick="window.history.back()">
+        <p id="message" style="color: rgb(255, 45, 45);"></p>
+    </form>
+
+    <script>
+        document.getElementById("login").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById("password").value;
+            const submittedHash = await hashPassword(password);
+            console.log(submittedHash)
+            
+            const response = await fetch('/verify-login/{{ page }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({password: submittedHash})
+            });
+
+            const result = await response.json();
+            const message = document.getElementById("message");
+
+            if (response.status === 200) {
+                message.textContent = "";
+                window.location.href = "/qrd/config/{{ page }}";
+            } else {
+                message.textContent = "Incorrect password";
+            }
+        });
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+    </script>
+</body>
+</html>

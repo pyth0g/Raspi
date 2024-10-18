@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Information</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 50px auto;
+        }
+
+        .card {
+            background-color: #222;
+            border: none;
+            margin: 15px;
+        }
+
+        .card-header {
+            background-color: #444;
+            font-weight: bold;
+        }
+
+        .card-body {
+            font-size: 1.2em;
+        }
+
+        a {
+            color: #4CAF50;
+            color: white;
+            text-decoration: none;
+        }
+
+        a:hover {
+            background-color: #45a049;
+            color: white;
+            transform: scale(1.05);
+            text-decoration: none;
+        }
+
+        .top-left {
+            font-size: 2.5em;
+            padding: 10px 20px;
+            color: white;
+            background-color: black;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            position: absolute;
+            top: 12px;
+            left: 20px;
+        }
+
+        @media (max-width: 1000px){
+            .top-left{
+                font-size: 1.5em;
+                padding: 2px 2px;
+                color: white;
+                background-color: black;
+                border-radius: 5px;
+                text-decoration: none;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="top-left" style="background-color: black;">/ home</a>
+
+    <h1>System Information</h1>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">CPU</div>
+                    <div class="card-body">
+                        <p>{{ sys_info.cpu_usage | round(2) }}%</p>
+                        <p>{{ sys_info.cpu_temp }}°C</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Memory Information</div>
+                    <div class="card-body">
+                        <p>Total Memory: {{ sys_info.memory_total }}</p>
+                        <p>Used Memory: {{ sys_info.memory_used }}</p>
+                        <p>Free Memory: {{ sys_info.memory_free }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Disk Space</div>
+                    <div class="card-body">
+                        <p>Total Disk Space: {{ sys_info.disk_total }}</p>
+                        <p>Used Disk Space: {{ sys_info.disk_used }}</p>
+                        <p>Free Disk Space: {{ sys_info.disk_free }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        a {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        a:active {
+            background-color: #388E3C;
+        }
+
+        .top-left {
+            font-size: 2.5em;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        p {
+            font-size: 2.2em;
+            font-weight: 500;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @media (max-width: 1000px){
+            .top-left{
+                font-size: 1.5em;
+                padding: 2px 2px;
+                color: white;
+                background-color: black;
+                border-radius: 5px;
+                text-decoration: none;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                margin-bottom: 0px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="top-left" style="background-color: black;">/ home</a>
+
+    <div class="container">
+        <p>On site</p>
+        <a href="/led">LED Control</a>
+        <a href="/led_message">LED Message</a>
+        <a href="/sysinfo">System Info</a>
+        <p>Curl</p>
+        <a href="/time">Digital Clock</a>
+        <a href="/clock">Analog Clock</a>
+        <a href="/calendar">Calendar</a>
+    </div>
+</body>
+</html>

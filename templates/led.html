@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Led</title>
+    <style>
+        body {
+            background-color: black;
+            font-family: 'Courier New', monospace;
+            color: white;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 3%;
+        }
+
+        input[type="submit"] {
+            padding: 20% 12%;
+            font-size: 26px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[name="led_red"] {
+            background-color: #ff4d4d;
+            color: black;
+            opacity: 0.8;
+        }
+
+        input[name="led_green"] {
+            background-color: #61ff61;
+            color: black;
+            opacity: 0.8;
+        }
+
+        input[name="led_off"] {
+            background-color: #eeeeee;
+            color: black;
+            opacity: 0.8;
+        }
+
+        input[type="submit"]:hover {
+            opacity: 0.5;
+            transform: scale(1.05);
+        }
+
+        .vibrant {
+            background-color: #ff0000;
+            color: black;
+            transform: scale(1.1);
+            transition: transform 0.3s ease;
+        }
+
+        a {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        a:active {
+            background-color: #388E3C;
+        }
+
+        .top-left {
+            font-size: 2.5em;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        @media (max-width: 1000px){
+            input[type="submit"] {
+                margin-top: 5px;
+                padding: 22% 10%;
+                font-size: 26px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                opacity: 0.5;
+            }
+
+            .button{
+                display: flex;
+                flex-direction: column;
+            }
+
+            input[type="submit"]:hover {
+                opacity: 0.5;
+                transform: scale(1.01);
+                transition: transform 0.3s ease;
+            }
+
+            .top-left{
+                font-size: 1.5em;
+                padding: 2px 2px;
+                color: white;
+                background-color: black;
+                border-radius: 5px;
+                text-decoration: none;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="top-left" style="background-color: black;">/ home</a>
+
+    <form method="POST" action="/led">
+        <div class="button">
+            <input type="submit" style="margin-top: 50px;" name="led_red" value="  Red  " onclick="setVibrant(this)" />
+            <input type="submit" name="led_green" value="Green" onclick="setVibrant(this)" />
+            <input type="submit" name="led_off" value="  Off  " onclick="setVibrant(this)" />
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', monospace;
+            white-space: pre;
+        }
+
+        a {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        a:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        a:active {
+            background-color: #388E3C;
+        }
+
+        .top-left {
+            font-size: 2.5em;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        @media (max-width: 1000px){
+            .top-left{
+                font-size: 1.5em;
+                padding: 2px 2px;
+                color: white;
+                background-color: black;
+                border-radius: 5px;
+                text-decoration: none;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+            }
+
+            p{
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="top-left" style="background-color: black;">/ home</a>
+    <br />
+<pre>
+{{ time }}
+</pre>
+<p id="curl"></p>
+</body>
+<script>
+    document.getElementById("curl").textContent = "curl " + window.location.href
+</script>
+</html>
