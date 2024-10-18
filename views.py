@@ -28,16 +28,19 @@ def index():
 @views.route("/led", methods=['GET', 'POST'])
 def led():
     if request.method == 'POST':
-            state = request.form
+        state = request.form
 
-            if "led_red" in state:
-                gpio.output(pins, (gpio.HIGH, gpio.LOW))
+        if "led_red" in state:
+            # red
+            gpio.output(pins, (gpio.HIGH, gpio.LOW))
 
-            elif "led_green" in state:
-                gpio.output(pins, (gpio.LOW, gpio.HIGH))
+        elif "led_green" in state:
+            # green
+            gpio.output(pins, (gpio.LOW, gpio.HIGH))
 
-            elif "led_off" in state:
-                gpio.output(pins, (gpio.LOW, gpio.LOW))
+        elif "led_off" in state:
+            # off
+            gpio.output(pins, (gpio.LOW, gpio.LOW))
 
     return render_template('led.html')
 
@@ -58,6 +61,7 @@ def led_message():
             for l in text:
                 for i in '{0:08b}'.format(ord(l)):
                     if i == "0":
+                        #green
                         gpio.output(pins, (gpio.LOW, gpio.HIGH))
 
                         sleep(time)
@@ -65,6 +69,7 @@ def led_message():
                         sleep(time)
 
                     elif i == "1":
+                        # red
                         gpio.output(pins, (gpio.HIGH, gpio.LOW))
 
                         sleep(time)
