@@ -364,8 +364,8 @@ def counter_file(values=[]):
             f.write("\n".join(values))
 
         elif not contents:
-            f.write(f"0\n{str(dt.now())}\n{contents.split("\n")[2]}")
-            contents = f"0\n{str(dt.now())}\n{contents.split("\n")[2]}"
+            f.write(f"0\n{str(dt.now())}\n2")
+            contents = f"0\n{str(dt.now())}\n2"
 
     return contents.split("\n")
 
@@ -380,21 +380,42 @@ def counter():
             if int(counter_file()[2]) > 0:
                 count = counter_file()[0]
                 counter_file([count, str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes - 1)])
-                return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="static/flame-freeze.png")
+                freezes -= 1
+                return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="static/flame-freeze.png", freezes=freezes)
 
             else:
                 counter_file(["0", str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes)])
     
         else:
             if request.method == 'POST':
-                counter_file([str(int(counter_file()[0]) + 1), str(dt.now()).split('.')[0], str(freezes)])
+                count = int(counter_file()[0])
+
+                if count + 1 % 5 == 0 and freezes < 10:
+                    counter_file([str(int(count) + 1), str(dt.now()).split('.')[0], str(freezes + 1)])
+                    freezes += 1
+                else:
+                    counter_file([str(int(count) + 1), str(dt.now()).split('.')[0], str(freezes)])
+
                 since = 0
 
     count = counter_file()[0]
     
     if since == 0:
-        return render_template('counter.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png")
+        return render_template('counter.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png", freezes=freezes)
         
     else:
-        return render_template('counter.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png")
+        return render_template('counter.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png", freezes=freezes)
+
+@views.route("/ctr-widget")
+def counter_widget():
+    last = dt.strptime(counter_file()[1], '%Y-%m-%d %H:%M:%S')
+    since = int((dt.now() - last).days)
+
+    freezes = int(counter_file()[2])
+    count = counter_file()[0]
+
+    if since == 0:
+        return render_template('counter-widget.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png", freezes=freezes)
         
+    else:
+        return render_template('counter-widget.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png", freezes=freezes)
