@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, make_response, jsonify, redirect, send_file
 import resources
 import RPi.GPIO as gpio
-from datetime import datetime as dt, timezone
+from datetime import datetime as dt, timezone, timedelta
 import psutil
 import math
 from time import sleep
@@ -354,3 +354,47 @@ qrdcreate = qrdCreate()
 @views.route("/qrd", methods=['GET', 'POST'])
 def qrd_create():
     return qrdcreate.qrd_create()
+
+def counter_file(values=[]):
+    with open("ctr.inf", "r+") as f:
+        contents = f.read()
+
+        f.seek(0)
+        if values:
+            f.write("\n".join(values))
+
+        elif not contents:
+            f.write(f"0\n{str(dt.now())}\n{contents.split("\n")[2]}")
+            contents = f"0\n{str(dt.now())}\n{contents.split("\n")[2]}"
+
+    return contents.split("\n")
+
+@views.route("/ctr", methods=['GET', 'POST'])
+def counter():
+    last = dt.strptime(counter_file()[1], '%Y-%m-%d %H:%M:%S')
+    since = int((dt.now() - last).days)
+    freezes = int(counter_file()[2])
+
+    if since != 0:
+        if since > 1:
+            if int(counter_file()[2]) > 0:
+                count = counter_file()[0]
+                counter_file([count, str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes - 1)])
+                return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="static/flame-freeze.png")
+
+            else:
+                counter_file(["0", str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes)])
+    
+        else:
+            if request.method == 'POST':
+                counter_file([str(int(counter_file()[0]) + 1), str(dt.now()).split('.')[0], str(freezes)])
+                since = 0
+
+    count = counter_file()[0]
+    
+    if since == 0:
+        return render_template('counter.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png")
+        
+    else:
+        return render_template('counter.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png")
+        

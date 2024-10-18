@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: 
+                linear-gradient(to left top, #01555a 0%, #007a7d 30%, #004d4f 70%, #003538 100%),
+                linear-gradient(to right bottom, #01555a 0%, #007a7d 30%, #004d4f 70%, #003538 100%);
+            background-blend-mode: overlay;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: row;
+            flex-grow: 1;
+            margin-bottom: 32px;
+        }
+
+        .flame {
+            width: 10%;
+            height: 10%;
+            margin-bottom: 32px;
+        }
+
+        .count {
+            font-size: 10em;
+            font-family: "Nunito", sans-serif;
+            font-weight: 700;
+            color: {{ color }};
+        }
+
+        input {
+            outline: none;
+            border: none;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin-top: auto;
+            padding-bottom: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .flame {
+                width: 40%;
+                height: 40%;
+                margin-bottom: 16px;
+            }
+
+            .count {
+                font-size: 8em;
+                margin-right: 10px;
+            }
+
+            .container {
+                margin-right: 14px;
+            }
+
+            .button {
+                width: 90%;
+                height: auto;
+            }
+
+            .center{
+                padding-bottom: 0px;
+            }
+
+            body{
+                min-height: 90vh;
+            }
+
+            .background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-image: 
+                    linear-gradient(to left top, #01555a 0%, #004d4f 50%, #003538 100%),
+                    linear-gradient(to right bottom, #01555a 0%, #004d4f 50%, #003538 100%),
+                    linear-gradient(to right top, #01555a 0%, #004d4f 50%, #003538 100%);
+                background-repeat: no-repeat;
+                background-size: 150% 150%;
+                z-index: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="container">
+        <img class="flame" src="{{ img }}" />
+        <p class="count">{{ count }}</p>
+    </div>
+
+    <form id="done" method="POST" action="/ctr">
+        <div class="center">
+            <input type="image" class="button" id="done" src="static/done.png" />
+        </div>
+    </form>
+
+    <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        document.getElementById('done').addEventListener('click', async function(event) {
+            const img = document.getElementById('done');
+            
+            img.src = "static/done-pressed.png";
+            await sleep(150);
+            
+            img.src = "static/done.png";
+        });
+    </script>
+</body>
