@@ -146,7 +146,7 @@
     <div class="background"></div>
     
     <div class="top-right">
-        <img class="small-flame" src="static/flame-freeze.png" />
+        <img class="small-flame" src="/static/flame-freeze.png" />
         <p class="freeze-count">{{ freezes }}</p>
     </div>
 
@@ -155,9 +155,9 @@
         <p class="count">{{ count }}</p>
     </div>
 
-    <form method="POST" action="/ctr">
+    <form method="POST" action="/ctr/{{ name }}">
         <div class="center">
-            <input type="image" class="button" id="done" src="static/done.png" />
+            <input type="image" class="button" id="done" src="/static/done.png" />
         </div>
     </form>
 

@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, make_response, jsonify, redirect, send_file
+from flask import Blueprint, render_template, request, make_response, jsonify, redirect, send_file, send_from_directory
 import resources
+import os.path
 import RPi.GPIO as gpio
 from datetime import datetime as dt, timezone, timedelta
 import psutil
@@ -21,9 +22,14 @@ gpio.setup(pins, gpio.OUT)
 
 views = Blueprint(__name__, "views")
 
+
 @views.route("/")
 def index():
     return render_template('index.html')
+
+@views.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(views.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @views.route("/led", methods=['GET', 'POST'])
 def led():
@@ -321,33 +327,65 @@ class qrdCreate:
         self.b64im = ""
 
     def qrd_create(self):
-        if request.method == 'POST':
-            req = list(map(str.lower, request.form.to_dict()))
+        agent = request.headers.get('User-Agent')
 
-            if "new" in req:
-                if not str(request.form.to_dict()['new']).isalnum() or str(request.form.to_dict()['new']) == qrd_banned or qrd_get(request.form.to_dict()['new']):
-                    return render_template('qrd-create.html', img_data="", error="This path already exists or is not allowed.", vis="hidden")
-                    
-                url = f"https://raspi.kladnik.cc/qrd/{request.form.to_dict()['new']}"
+        if any(i in agent.lower() for i in ["iphone", "android", "blackberry"]):
+            if request.method == 'POST':
+                req = list(map(str.lower, request.form.to_dict()))
 
-                with open("qrd.urls", "a") as f:
-                    f.write(f"{request.form.to_dict()['new']} /qrd/config/{request.form.to_dict()['new']} *\n")
+                if "new" in req:
+                    if not str(request.form.to_dict()['new']).isalnum() or str(request.form.to_dict()['new']) == qrd_banned or qrd_get(request.form.to_dict()['new']):
+                        return render_template('qrd-create-mobile.html', img_data="", error="This path already exists or is not allowed.", vis="hidden")
+                        
+                    url = f"https://raspi.kladnik.cc/qrd/{request.form.to_dict()['new']}"
 
-                self.page = request.form.to_dict()['new']
-                self.b64im = qr_code(url)
+                    with open("qrd.urls", "a") as f:
+                        f.write(f"{request.form.to_dict()['new']} /qrd/config/{request.form.to_dict()['new']} *\n")
 
-                return render_template('qrd-create.html', img_data=f"data:image/png;base64,{self.b64im}", link=url, t1="Link:", t2="QR Code:", vis="submit")
-            
-            elif "save_qr" in req:
-                img = Image.open(io.BytesIO(base64.b64decode(self.b64im)))
-                img_io = io.BytesIO()
+                    self.page = request.form.to_dict()['new']
+                    self.b64im = qr_code(url)
 
-                img.save(img_io, 'PNG')
-                img_io.seek(0)
+                    return render_template('qrd-create-mobile.html', img_data=f"data:image/png;base64,{self.b64im}", link=url, t1="Link:", t2="QR Code:", vis="submit")
+                
+                elif "save_qr" in req:
+                    img = Image.open(io.BytesIO(base64.b64decode(self.b64im)))
+                    img_io = io.BytesIO()
 
-                return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f"qr_code_{self.page}.png")
+                    img.save(img_io, 'PNG')
+                    img_io.seek(0)
 
-        return render_template('qrd-create.html', img_data="", vis="hidden")
+                    return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f"qr_code_{self.page}.png")
+
+            return render_template('qrd-create-mobile.html', img_data="", vis="hidden")
+
+        else:
+            if request.method == 'POST':
+                req = list(map(str.lower, request.form.to_dict()))
+
+                if "new" in req:
+                    if not str(request.form.to_dict()['new']).isalnum() or str(request.form.to_dict()['new']) == qrd_banned or qrd_get(request.form.to_dict()['new']):
+                        return render_template('qrd-create.html', img_data="", error="This path already exists or is not allowed.", vis="hidden")
+                        
+                    url = f"https://raspi.kladnik.cc/qrd/{request.form.to_dict()['new']}"
+
+                    with open("qrd.urls", "a") as f:
+                        f.write(f"{request.form.to_dict()['new']} /qrd/config/{request.form.to_dict()['new']} *\n")
+
+                    self.page = request.form.to_dict()['new']
+                    self.b64im = qr_code(url)
+
+                    return render_template('qrd-create.html', img_data=f"data:image/png;base64,{self.b64im}", link=url, t1="Link:", t2="QR Code:", vis="submit")
+                
+                elif "save_qr" in req:
+                    img = Image.open(io.BytesIO(base64.b64decode(self.b64im)))
+                    img_io = io.BytesIO()
+
+                    img.save(img_io, 'PNG')
+                    img_io.seek(0)
+
+                    return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=f"qr_code_{self.page}.png")
+
+            return render_template('qrd-create.html', img_data="", vis="hidden")
 
 qrdcreate = qrdCreate()    
 
@@ -355,67 +393,155 @@ qrdcreate = qrdCreate()
 def qrd_create():
     return qrdcreate.qrd_create()
 
-def counter_file(values=[]):
-    with open("ctr.inf", "r+") as f:
+def get_counter(name: str):
+    with open("ctr.inf", "r") as f:
         contents = f.read()
 
+        contents = {i.split(";")[-1]: i.split(";")[:-1] for i in contents.split("\n")}
+
+        try:
+            return contents[name]
+
+        except KeyError:
+            return None
+        
+def set_counter(name: str, count: int, freezes: int, frozen: str, time: str | None = str(dt.now()).split('.')[0]):
+    with open("ctr.inf", "r+") as f:
+        contents = f.read().split("\n")
+        found = False
         f.seek(0)
-        if values:
-            f.write("\n".join(values))
 
-        elif not contents:
-            f.write(f"0\n{str(dt.now())}\n2")
-            contents = f"0\n{str(dt.now())}\n2"
-
-    return contents.split("\n")
+        for c, i in enumerate(contents):
+            if i.split(";")[-1] == name:
+                contents[c] = f"{count};{time};{freezes};{frozen};{name}"
+                found = True
+            
+        if not found:
+            contents.append(f"{count};{time};{freezes};{frozen};{name}")
+        
+        f.write("\n".join(contents))
 
 @views.route("/ctr", methods=['GET', 'POST'])
-def counter():
-    last = dt.strptime(counter_file()[1], '%Y-%m-%d %H:%M:%S')
-    since = int((dt.now() - last).days)
-    freezes = int(counter_file()[2])
+def create_counter():
+    req = list(map(str.lower, request.form.to_dict()))
+    agent = request.headers.get('User-Agent')
+
+    if any(i in agent.lower() for i in ["iphone", "android", "blackberry"]):
+        if "new" in req:
+            if not str(request.form.to_dict()['new']).isalnum() or str(request.form.to_dict()['new']) == qrd_banned or get_counter(request.form.to_dict()['new']):
+                render_template("ctr-create-mobile.html", error="This counter already exists or is not allowed.")
+            
+            name = request.form.to_dict()['new']
+
+            set_counter(name, 0, 2, 0, str(dt.now() - timedelta(days=1)).split('.')[0])
+
+            return render_template("ctr-create-mobile.html", link=f"https://raspi.kladnik.cc/ctr/{name}", t1="Link:")
+
+        return render_template("ctr-create-mobile.html")
+    
+    else:
+        if "new" in req:
+            if not str(request.form.to_dict()['new']).isalnum() or str(request.form.to_dict()['new']) == qrd_banned or get_counter(request.form.to_dict()['new']):
+                render_template("ctr-create.html", error="This counter already exists or is not allowed.")
+            
+            name = request.form.to_dict()['new']
+
+            set_counter(name, 0, 2, 0, str(dt.now() - timedelta(days=1)).split('.')[0])
+
+            return render_template("ctr-create.html", link=f"https://raspi.kladnik.cc/ctr/{name}", t1="Link:")
+
+        return render_template("ctr-create.html")
+
+@views.route("/ctr/<name>", methods=['GET', 'POST'])
+def counter(name):
+    i = str(name)
+    if not i.isalnum():
+        return "<h1>Name not allowed!</h1><p>The name can contain only letters and numbers.</p>"
+
+    if not get_counter(i):
+        return redirect("/ctr")
+
+    last = dt.strptime(get_counter(i)[1], '%Y-%m-%d %H:%M:%S')
+    since = (dt.now().date() - last.date()).days
+    freezes = int(get_counter(i)[2])
 
     if since != 0:
         if since > 1:
-            if int(counter_file()[2]) > 0:
-                count = counter_file()[0]
-                counter_file([count, str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes - 1)])
+            if int(get_counter(i)[2]) > 0:
+                count = get_counter(i)[0]
+                set_counter(i, count, str(freezes - 1), "1", str(dt.now() - timedelta(days=1)).split('.')[0])
                 freezes -= 1
-                return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="static/flame-freeze.png", freezes=freezes)
+                return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="/static/flame-freeze.png", freezes=freezes, name=i)
 
             else:
-                counter_file(["0", str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes)])
+                set_counter(i, "0", str(freezes), str(dt.now() - timedelta(days=1)).split('.')[0])
     
         else:
             if request.method == 'POST':
-                count = int(counter_file()[0])
+                count = int(get_counter(i)[0])
 
-                if count + 1 % 5 == 0 and freezes < 10:
-                    counter_file([str(int(count) + 1), str(dt.now()).split('.')[0], str(freezes + 1)])
+                if (count + 1) % 5 == 0 and freezes < 10:
+                    set_counter(i, count + 1, str(freezes + 1), "0", str(dt.now()).split('.')[0])
                     freezes += 1
                 else:
-                    counter_file([str(int(count) + 1), str(dt.now()).split('.')[0], str(freezes)])
+                    set_counter(i, count + 1, str(freezes), "0", str(dt.now()).split('.')[0])
 
                 since = 0
 
-    count = counter_file()[0]
+    count = get_counter(i)[0]
     
-    if since == 0:
-        return render_template('counter.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png", freezes=freezes)
+    if get_counter(i)[3] == "1":
+        return render_template('counter.html', count=str(count), color="rgb(32, 176, 244)", img="/static/flame-freeze.png", freezes=freezes, name=i)
+
+    elif since == 0:
+        return render_template('counter.html', count=str(count), color="rgb(247, 144, 1)", img="/static/flame.png", freezes=freezes, name=i)
         
     else:
-        return render_template('counter.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png", freezes=freezes)
+        return render_template('counter.html', count=str(count), color="rgb(158, 158, 158)", img="/static/flame-off.png", freezes=freezes, name=i)
 
-@views.route("/ctr-widget")
-def counter_widget():
-    last = dt.strptime(counter_file()[1], '%Y-%m-%d %H:%M:%S')
-    since = int((dt.now() - last).days)
+@views.route("/ctr-widget/<name>")
+def counter_widget(name):
+    i = str(name)
+    if not i.isalnum():
+        return "<h1>Name not allowed!</h1><p>The name can contain only letters and numbers.</p>"
 
-    freezes = int(counter_file()[2])
-    count = counter_file()[0]
+    if not get_counter(i):
+        set_counter(i, 0, 2, 0, str(dt.now() - timedelta(days=1)).split('.')[0])
 
-    if since == 0:
-        return render_template('counter-widget.html', count=str(count), color="rgb(247, 144, 1)", img="static/flame.png", freezes=freezes)
+    last = dt.strptime(get_counter(i)[1], '%Y-%m-%d %H:%M:%S')
+    since = (dt.now().date() - last.date()).days
+    freezes = int(get_counter(i)[2])
+
+    if since != 0:
+        if since > 1:
+            if int(get_counter(i)[2]) > 0:
+                count = get_counter(i)[0]
+                set_counter(i, count, str(freezes - 1), "1", str(dt.now() - timedelta(days=1)).split('.')[0])
+                freezes -= 1
+                return render_template('counter-widget.html', count=str(count), color="rgb(32, 176, 244)", img="/static/flame-freeze.png", freezes=freezes, name=i)
+
+            else:
+                set_counter(i, 0, str(dt.now() - timedelta(days=1)).split('.')[0], str(freezes))
+    
+        else:
+            if request.method == 'POST':
+                count = int(get_counter(i)[0])
+
+                if (count + 1) % 5 == 0 and freezes < 10:
+                    set_counter(i, count + 1, "0", str(dt.now()).split('.')[0], str(freezes + 1))
+                    freezes += 1
+                else:
+                    set_counter(i, count + 1, "0", str(dt.now()).split('.')[0], str(freezes))
+
+                since = 0
+
+    count = get_counter(i)[0]
+
+    if get_counter(i)[3] == "1":
+        return render_template('counter-widget.html', count=str(count), color="rgb(32, 176, 244)", img="/static/flame-freeze.png", freezes=freezes, name=i)
+
+    elif since == 0:
+        return render_template('counter-widget.html', count=str(count), color="rgb(247, 144, 1)", img="/static/flame.png", freezes=freezes, name=i)
         
     else:
-        return render_template('counter-widget.html', count=str(count), color="rgb(158, 158, 158)", img="static/flame-off.png", freezes=freezes)
+        return render_template('counter-widget.html', count=str(count), color="rgb(158, 158, 158)", img="/static/flame-off.png", freezes=freezes, name=i)
